@@ -46,7 +46,7 @@ define('VERSIONCONTROL_FLAG_AUTOADD_REPOSITORIES',      1);
 define('VERSIONCONTROL_ITEM_FILE',              1);
 define('VERSIONCONTROL_ITEM_DIRECTORY',         2);
 /**
- * @name VCS "Deleted" item types. 
+ * @name VCS "Deleted" item types.
  * Only used for items that don't exist in the repository (anymore), at least
  * not in the given revision. That is mostly the case with items that were
  * deleted by a commit and are returned as result by
