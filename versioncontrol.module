@@ -28,6 +28,7 @@ define('VERSIONCONTROL_CAPABILITY_ATOMIC_COMMITS',          1);
 define('VERSIONCONTROL_CAPABILITY_COMMIT_RESTRICTIONS',     2);
 define('VERSIONCONTROL_CAPABILITY_BRANCH_TAG_RESTRICTIONS', 3);
 define('VERSIONCONTROL_CAPABILITY_DIRECTORY_REVISIONS',     4);
+define('VERSIONCONTROL_CAPABILITY_CLONEABLE',               5);
 //@}
 
 /**
@@ -2875,7 +2876,11 @@ function versioncontrol_is_account_authorized_cloneable($repository, $uid) {
   if (!db_fetch_object($result)) {
     return FALSE;
   }
-  $approved = array();
+
+  $backend = versioncontrol_get_backend($repository);
+  if (!in_array(VERSIONCONTROL_CAPABILITY_CLONEABLE, $backend['capabilities'])) {
+    return FALSE;
+  }
 
   foreach (module_implements('versioncontrol_is_account_authorized_cloneable') as $module) {
     $function = $module .'_versioncontrol_is_account_authorized_cloneable';
