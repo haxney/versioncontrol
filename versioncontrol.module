@@ -2855,6 +2855,39 @@ function versioncontrol_is_account_authorized($repository, $uid) {
   return TRUE;
 }
 
+/**
+ * Return TRUE if the account is authorized to clone to the given repository, or
+ * FALSE otherwise.
+ *
+ * @param $repository
+ *   The repository where the status should be checked. (Note that the user's
+ *   authorization status may differ for each repository.)
+ * @param $uid
+ *   The user id of the checked account.
+ */
+function versioncontrol_is_account_authorized_cloneable($repository, $uid) {
+  if (!$uid || !isset($repository)) {
+    return FALSE;
+  }
+  // Make sure that the user really exists.
+  $result = db_query('SELECT u.uid FROM {users} u WHERE u.uid = %d',
+                     $uid);
+  if (!db_fetch_object($result)) {
+    return FALSE;
+  }
+  $approved = array();
+
+  foreach (module_implements('versioncontrol_is_account_authorized_cloneable') as $module) {
+    $function = $module .'_versioncontrol_is_account_authorized_cloneable';
+
+    // If at least one hook_versioncontrol_is_account_authorized_cloneable()
+    // returns FALSE, the account is assumed not to be approved.
+    if ($function($repository, $uid) === FALSE) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
 
 /**
  * Retrieve the URL of the repository viewer that displays the given commit
