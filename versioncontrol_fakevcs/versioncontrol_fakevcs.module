@@ -1225,3 +1225,60 @@ function versioncontrol_fakevcs_export_accounts($repository, $accounts) {
   }
   return $data;
 }
+
+/**
+ * Implementation of [versioncontrol_backend]_clone_path():
+ *
+ * Clone a particular path of the repository, using the name given to inform the
+ * format of the result. In a centralized VCS, such as Subversion, this will
+ * create a new directory containing the clone. In a distributed VCS, such as
+ * Git, Mercurial, or Bazaar, an entirely new repository will be created.
+ *
+ * This function is optional for backends to implement. If the backend specifies
+ * that it has the VERSIONCONTROL_CAPABILITY_CLONEABLE capability, then the
+ * backend MUST implement this function.
+ *
+ * @param $repository
+ *   The repository to clone. Depending on the VCS type, a new commit may or may
+ *   not be made. Also, the repository may or may not be modified, depending on
+ *   how the backend chooses to implement cloning.
+ *
+ * @param $path
+ *   The directory to treat as the root of the clone. For a centralized VCS,
+ *   this allows the caller to clone only a specific part of the repository
+ *   (such as a particular branch) to clone. For DVCS repositories, this should
+ *   almost always be the root of the repository, "/".
+ *
+ * @param $name
+ *   A user-specified name to give to the cloned path. For a centralized VCS,
+ *   this will likely be the name of the subfolder of the project in which the
+ *   branch lives. For a DVCS, this will probably be the name of the repository
+ *   itself.
+ *
+ * @return
+ *   An array with the following keys:
+ *
+ *   - 'repository': The repository of the cloned path. This may either be the
+ *      same repository as the $repository argument (such as with centralized
+ *      VCSs) or a new repository (as with DVCSs).
+ *
+ *   - 'path': The path within the returned repository of the clone. For a
+ *      centralized VCS, this will likely be some combination of the $path
+ *      argument and the $name argument, whereas a DVCS will most likely return
+ *      the root path, "/".
+ */
+function versioncontrol_fakevcs_clone_path($repository, $path, $name) {
+  // Let's say it is a decentralized VCS, so we need to clone the repository.
+
+  $new_repo_spec = array(
+    'name' => $name,
+  );
+
+  $new_repo = array_merge($repository, $new_repo_spec);
+
+  // Update the backend URL for the new repository. Real backends will want a
+  // more sophisticated way of doing this (to avoid replacing occurrences of
+  // $path in unexpected places of the URL).
+  $new_repo['url_backend'] = str_replace($path, $name, $new_repo['url_backend']);
+
+}
