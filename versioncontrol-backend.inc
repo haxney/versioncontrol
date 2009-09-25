@@ -98,7 +98,6 @@ function versioncontrol_has_write_access($operation, $operation_items) {
     )));
     return FALSE;
   }
-
   // If the user doesn't have commit access at all, we can't allow this as well.
   $repo_data = $operation['repository']['data']['versioncontrol'];
 
@@ -1112,4 +1111,47 @@ function _versioncontrol_db_update_additions($table_name, $primary_key_name, $el
 function _versioncontrol_db_delete_additions($table_name, $primary_key_name, $primary_key) {
   db_query('DELETE FROM {'. $table_name .'}
             WHERE '. $primary_key_name .' = %d', $primary_key);
+}
+
+/**
+ * Clone a particular path of the repository, using the name given to inform the
+ * format of the result. This will create a new directory containing the clone.
+ *
+ * @param $repository
+ *   The repository to clone. Depending on the VCS type, a new commit may or may
+ *   not be made. Also, the repository may or may not be modified, depending on
+ *   how the backend chooses to implement cloning.
+ *
+ * @param $path
+ *   The directory to treat as the root of the clone. For a centralized VCS,
+ *   this allows the caller to clone only a specific part of the repository
+ *   (such as a particular branch) to clone. For DVCS repositories, this should
+ *   almost always be the root of the repository, "/".
+ *
+ * @param $name
+ *   A user-specified name to give to the cloned path. For a centralized VCS,
+ *   this will likely be the name of the subfolder of the project in which the
+ *   branch lives. For a DVCS, this will probably be the name of the repository
+ *   itself.
+ *
+ * @return
+ *   An array with the following keys:
+ *
+ *   - 'repository': The repository of the cloned path. This may either be the
+ *      same repository as the $repository argument (such as with centralized
+ *      VCSs) or a new repository (as with DVCSs).
+ *
+ *   - 'path': The path within the returned repository of the clone. For a
+ *      centralized VCS, this will likely be some combination of the $path
+ *      argument and the $name argument, whereas a DVCS will most likely return
+ *      the root path, "/".
+ */
+function versioncontrol_clone_path($repository, $path, $name) {
+  $vcs = $repository['vcs'];
+  $backend = versioncontrol_get_backend($repository);
+    if (in_array(VERSIONCONTROL_CAPABILITY_CLONEABLE, $backend['capabilities']) &&versioncontrol_backend_implements($vcs, 'clone_path')) {
+    _versioncontrol_call_backend($vcs, 'clone_path', array(
+      'delete', $operation, $operation_items
+    ));
+  }
 }
